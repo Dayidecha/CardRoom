@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- vue -->
+    <script src="assets/vue.js"></script>
+    <!-- elementui -->
+    <link rel="stylesheet" href="assets/element/index.css">
+    <script src="assets/element/index.js"></script>
+
+    <title>24.</title>
+</head>
+
+<body>
+    <div id="app">
+        <div class="container">
+            <div>  <el-button type="primary" @click="dealCards(4)">Deal 4 Cards</el-button>
+                <el-button type="primary" @click="calculate(tempCards)">check 24.</el-button>
+                <el-button type="primary" @click="init()">shuffle</el-button>
+            </div>
+                
+            <div class="cards">
+                <div v-for="(card, index) in tempCards" :key="index" class="card">
+                    {{ card.rank }}{{ card.suit }}
+                </div>
+            </div>
+            <div>{{checked24}}</div>
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+        var vm =  new Vue({
+            el:'#app',
+            data() {
+                return {
+                    //定义扑克牌的数组
+                    suits: ['♠', '♥', '♦', '♣'],
+                    ranks: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'],
+                    deck: [],
+                    dealtCards: [],
+                    tempCards:[],
+                    checked24:'',
+                }
+            },
+            methods: {
+                //初始化
+                init() {
+                    for (let i = 0; i < this.suits.length; i++) {
+                        for (let j = 0; j < this.ranks.length; j++) {
+                            this.deck.push({ suit: this.suits[i], rank: this.ranks[j] });
+                        }
+                    }
+                    this.shuffle(this.deck)
+                },
+
+                //洗牌
+                shuffle(array) {
+                    for (let i = array.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [array[i], array[j]] = [array[j], array[i]];
+                    }
+                    alert('shuff;e done!');
+                },
+
+                //储存已经发出去的牌
+                dealCards(numCards) {
+                    //清空上一次检测的24点
+                    this.checked24 = '',
+                    this.tempCards = [];
+                    if (this.deck.length < numCards) {
+                        alert('Not enough cards in the deck!');
+                        return 
+                    }
+                    for (let i = 0; i < numCards; i++) {
+                        this.tempCards.push(this.deck.pop())
+                    }
+                    this.dealtCards = this.dealtCards.concat(this.tempCards)
+                },
+
+                //检测
+                calculate(points) {
+                    this.checked24 = ''
+                    if (points.length !== 4) {
+                        return false;
+                    }
+                    const operators = ['+', '-', '*', '/'];
+                    for (let i = 0; i < operators.length; i++) {
+                        for (let j = 0; j < operators.length; j++) {
+                            for (let k = 0; k < operators.length; k++) {
+                                const expression = points[0].rank + operators[i]+ points[1].rank
+                                    + operators[j] + points[2].rank + operators[k] + points[3].rank;
+                                try {
+                                    if (eval(expression) === 24) {
+                                        console.log(expression)
+                                        this.checked24 = expression;
+                                        return true;
+                                    }
+                                } catch (e) {
+                                    // Ignore any errors caused by invalid expressions
+                                }
+                            }
+                        }
+                    }
+                    this.checked24 = '算不出';
+                    return false;
+                }
+            },
+         
+            mounted() {
+                this.init()
+                console.log(this.deck)
+            },
+        })
+
+    </script>
+
+    <style scoped>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 40px;
+        }
+
+        .cards {
+            display: flex;
+            margin-top: 20px;
+        }
+
+        .card {
+            width: 60px;
+            height: 80px;
+            box-sizing: border-box;
+            border: 1px solid #333;
+            border-radius: 5px;
+            font-size: 32px;
+            text-align: center;
+            line-height: 80px;
+            margin-right: 10px;
+        }
+    </style>
+</body>
+
+</html>
