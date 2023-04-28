@@ -42,11 +42,16 @@
                     //定义扑克牌的数组
                     suits: ['♠', '♥', '♦', '♣'],
                     ranks: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'],
+                    //扑克
                     deck: [],
+                    //弃牌堆
                     dealtCards: [],
+                    //当前发的牌
                     tempCards: [],
-                    testDeck: [],
+                    //是否能凑24点
                     checked24: '',
+                    //数字排列时是否还要继续计算24.
+                    flag: false, 
                 }
             },
             methods: {
@@ -64,11 +69,12 @@
 
                 //测试数据
                 testData() {
+                    this.flag = false
                     this.tempCards = []
-                    this.tempCards.push({ suit: this.suits[1], rank: '2' })
+                    this.tempCards.push({ suit: this.suits[0], rank: '1' })
                     this.tempCards.push({ suit: this.suits[1], rank: '3' })
-                    this.tempCards.push({ suit: this.suits[1], rank: '5' })
-                    this.tempCards.push({ suit: this.suits[1], rank: '12' })
+                    this.tempCards.push({ suit: this.suits[2], rank: '4' })
+                    this.tempCards.push({ suit: this.suits[3], rank: '6' })
                 },
 
                 //洗牌
@@ -83,14 +89,17 @@
 
                 //排列
                 permutations(arr) {
-
-                    console.log(" ++++++++++++++++++++++++++++ permutations checked ++++++++++++++++++++++++++++")
                     const result = [];
                     function permute(arr, m = []) {
-                        if (arr.length === 0) {
+                        //已经出现24点，不需要继续递归了
+                        if(vm.flag) return 
 
+                        if (arr.length === 0) {
+                            //
                             result.push(m);
-                            if (this.calculate(m)) return true
+                            //计算24点
+                            vm.calculate(m)
+                           
                         } else {
                             for (let i = 0; i < arr.length; i++) {
                                 let curr = arr.slice();
@@ -100,15 +109,16 @@
                         }
                     }
                     permute(arr);
-                    console.log(result)
+                    //console.log(result)
                     return result;
                 },
 
-                //储存已经发出去的牌
+                //发牌
                 dealCards(numCards) {
                     //清空上一次检测的24点
+                    this.flag = false
                     this.checked24 = '',
-                        this.tempCards = [];
+                    this.tempCards = [];
                     if (this.deck.length < numCards) {
                         alert('Not enough cards in the deck!');
                         return
@@ -121,7 +131,7 @@
 
                 //检测
                 calculate(points) {
-                    // console.log(points)
+                    //console.log(points)
                     this.checked24 = ''
                     if (points.length !== 4) {
                         return false;
@@ -152,25 +162,27 @@
                                     points[0].rank + operators[i] + '(' + points[1].rank
                                     + operators[j] + '(' + points[2].rank + operators[k] + points[3].rank + '))',
 
+                                    points[0].rank + operators[i] + '(' + points[1].rank
+                                    + operators[j] + points[2].rank + operators[k] + points[3].rank + ')',
+
                                 ];
 
                                 for (let l in expression) {
                                     try {
-                                        // console.log(expression[l] + '=' + eval(expression[l]))
+                                        //console.log(expression[l] + '=' + eval(expression[l]))
                                         if (eval(expression[l]) === 24) {
-
+                                            console.log(expression[l] + '=' + eval(expression[l]))
+                                            this.flag = true;
                                             this.checked24 = expression[l];
                                             return true;
                                         }
                                     } catch (e) {
-
                                     }
                                 }
-
                             }
                         }
-                    }
-                    this.checked24 = '算不出';
+                    }         
+                    this.checked24 = '算不出'
                     return false;
                 }
             },
