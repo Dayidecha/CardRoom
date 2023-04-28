@@ -17,11 +17,13 @@
 <body>
     <div id="app">
         <div class="container">
-            <div>  <el-button type="primary" @click="dealCards(4)">Deal 4 Cards</el-button>
-                <el-button type="primary" @click="calculate(tempCards)">check 24.</el-button>
+            <div>
+                <el-button type="primary" @click="dealCards(4)">Deal 4 Cards</el-button>
+                <el-button type="primary" @click="permutations(tempCards)">check 24.</el-button>
                 <el-button type="primary" @click="init()">shuffle</el-button>
+                <el-button type="primary" @click="testData()">test</el-button>
             </div>
-                
+
             <div class="cards">
                 <div v-for="(card, index) in tempCards" :key="index" class="card">
                     {{ card.rank }}{{ card.suit }}
@@ -33,8 +35,8 @@
 
 
     <script type="text/javascript">
-        var vm =  new Vue({
-            el:'#app',
+        var vm = new Vue({
+            el: '#app',
             data() {
                 return {
                     //定义扑克牌的数组
@@ -42,8 +44,9 @@
                     ranks: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'],
                     deck: [],
                     dealtCards: [],
-                    tempCards:[],
-                    checked24:'',
+                    tempCards: [],
+                    testDeck: [],
+                    checked24: '',
                 }
             },
             methods: {
@@ -55,6 +58,17 @@
                         }
                     }
                     this.shuffle(this.deck)
+
+
+                },
+
+                //测试数据
+                testData() {
+                    this.tempCards = []
+                    this.tempCards.push({ suit: this.suits[1], rank: '2' })
+                    this.tempCards.push({ suit: this.suits[1], rank: '3' })
+                    this.tempCards.push({ suit: this.suits[1], rank: '5' })
+                    this.tempCards.push({ suit: this.suits[1], rank: '12' })
                 },
 
                 //洗牌
@@ -66,14 +80,38 @@
                     alert('shuff;e done!');
                 },
 
+
+                //排列
+                permutations(arr) {
+
+                    console.log(" ++++++++++++++++++++++++++++ permutations checked ++++++++++++++++++++++++++++")
+                    const result = [];
+                    function permute(arr, m = []) {
+                        if (arr.length === 0) {
+
+                            result.push(m);
+                            if (this.calculate(m)) return true
+                        } else {
+                            for (let i = 0; i < arr.length; i++) {
+                                let curr = arr.slice();
+                                let next = curr.splice(i, 1);
+                                permute(curr.slice(), m.concat(next));
+                            }
+                        }
+                    }
+                    permute(arr);
+                    console.log(result)
+                    return result;
+                },
+
                 //储存已经发出去的牌
                 dealCards(numCards) {
                     //清空上一次检测的24点
                     this.checked24 = '',
-                    this.tempCards = [];
+                        this.tempCards = [];
                     if (this.deck.length < numCards) {
                         alert('Not enough cards in the deck!');
-                        return 
+                        return
                     }
                     for (let i = 0; i < numCards; i++) {
                         this.tempCards.push(this.deck.pop())
@@ -83,6 +121,7 @@
 
                 //检测
                 calculate(points) {
+                    // console.log(points)
                     this.checked24 = ''
                     if (points.length !== 4) {
                         return false;
@@ -91,17 +130,43 @@
                     for (let i = 0; i < operators.length; i++) {
                         for (let j = 0; j < operators.length; j++) {
                             for (let k = 0; k < operators.length; k++) {
-                                const expression = points[0].rank + operators[i]+ points[1].rank
-                                    + operators[j] + points[2].rank + operators[k] + points[3].rank;
-                                try {
-                                    if (eval(expression) === 24) {
-                                        console.log(expression)
-                                        this.checked24 = expression;
-                                        return true;
+                                let expression = [
+                                    points[0].rank + operators[i] + points[1].rank
+                                    + operators[j] + points[2].rank + operators[k] + points[3].rank,
+
+                                    '((' + points[0].rank + operators[i] + points[1].rank + ')'
+                                    + operators[j] + points[2].rank + ')' + operators[k] + points[3].rank,
+
+                                    '(' + points[0].rank + operators[i] + points[1].rank + ')'
+                                    + operators[j] + '(' + points[2].rank + operators[k] + points[3].rank + ')',
+
+
+                                    '((' + points[0].rank + operators[i] + '(' + points[1].rank
+                                    + operators[j] + points[2].rank + '))' + operators[k] + points[3].rank + ')',
+
+
+                                    points[0].rank + operators[i] + '((' + points[1].rank
+                                    + operators[j] + points[2].rank + ')' + operators[k] + points[3].rank + ')',
+
+
+                                    points[0].rank + operators[i] + '(' + points[1].rank
+                                    + operators[j] + '(' + points[2].rank + operators[k] + points[3].rank + '))',
+
+                                ];
+
+                                for (let l in expression) {
+                                    try {
+                                        // console.log(expression[l] + '=' + eval(expression[l]))
+                                        if (eval(expression[l]) === 24) {
+
+                                            this.checked24 = expression[l];
+                                            return true;
+                                        }
+                                    } catch (e) {
+
                                     }
-                                } catch (e) {
-                                    // Ignore any errors caused by invalid expressions
                                 }
+
                             }
                         }
                     }
@@ -109,7 +174,7 @@
                     return false;
                 }
             },
-         
+
             mounted() {
                 this.init()
                 console.log(this.deck)
